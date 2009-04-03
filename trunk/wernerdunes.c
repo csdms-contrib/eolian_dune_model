@@ -1,6 +1,4 @@
-#ifdef HAVE_MALLOC_H
-# include<malloc.h>
-#endif
+#include<malloc.h>
 #include<math.h>
 #include<stdio.h>
 #include<stdlib.h>
@@ -39,12 +37,13 @@ int nrl,nrh,ncl,nch;
 
        /*allocate pointers to rows */
         m=(int **)malloc((unsigned) (nrh-nrl+1)*sizeof(int*));
-      m -= nrl;
+       m -= nrl;
 
        /*allocate rows and set pointers to them */
         for(i=nrl;i<=nrh;i++) {
                       m[i]=(int *)malloc((unsigned) (nch-ncl+1)*sizeof(int));
-      }
+       m[i] -= ncl;
+       }
        /* return pointer to array of pointers to rows */
         return m;
 }
@@ -58,13 +57,12 @@ int nrl,nrh,ncl,nch;
 
         /*allocate pointers to rows */
         m=(float **) malloc((unsigned) (nrh-nrl+1)*sizeof(float*));
-    m -= nrl;
+     m -= nrl;
 
    /*allocate rows and set pointers to them */
       for(i=nrl;i<=nrh;i++) {
-                      m[i]=(float *) malloc((unsigned) (nch-ncl+1)*sizeof(float)
-);
-            m[i] -= ncl;
+                      m[i]=(float *) malloc((unsigned) (nch-ncl+1)*sizeof(float));
+     m[i] -= ncl;
     }
       /* return pointer to array of pointers to rows */
       return m;
@@ -217,7 +215,7 @@ main()
      idum=-56;
      psand=0.6;
      pbed=0.4;
-     thresh=1;
+     thresh=2;
      l=5;
      lattice_size_x=300;
      lattice_size_y=300;
