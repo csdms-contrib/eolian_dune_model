@@ -29,43 +29,42 @@ long nh,nl;
         return v-nl+NR_END;
 }
 
-int **imatrix(nrl,nrh,ncl,nch)
-int nrl,nrh,ncl,nch;
-/* allocate an int matrix with subscript range m[nrl..nrh][ncl..nch] */
+int **imatrix(long nrl, long nrh, long ncl, long nch)
+/* allocate a int matrix with subscript range m[nrl..nrh][ncl..nch] */
 {
-      int  i,**m;
+	long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+	int **m;
 
-       /*allocate pointers to rows */
-        m=(int **)malloc((unsigned) (nrh-nrl+1)*sizeof(int*));
-       m -= nrl;
+	m=(int **) malloc((size_t)((nrow+NR_END)*sizeof(int*)));
+	m += NR_END;
+	m -= nrl;
 
-       /*allocate rows and set pointers to them */
-        for(i=nrl;i<=nrh;i++) {
-                      m[i]=(int *)malloc((unsigned) (nch-ncl+1)*sizeof(int));
-       m[i] -= ncl;
-       }
-       /* return pointer to array of pointers to rows */
-        return m;
+	m[nrl]=(int *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(int)));
+	m[nrl] += NR_END;
+	m[nrl] -= ncl;
+
+	for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
+
+	return m;
 }
 
-float **matrix(nrl,nrh,ncl,nch)
-int nrl,nrh,ncl,nch;
+float **matrix(long nrl, long nrh, long ncl, long nch)
 /* allocate a float matrix with subscript range m[nrl..nrh][ncl..nch] */
 {
-    int i;
-    float **m;
+	long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+	float **m;
 
-        /*allocate pointers to rows */
-        m=(float **) malloc((unsigned) (nrh-nrl+1)*sizeof(float*));
-     m -= nrl;
+	m=(float **) malloc((size_t)((nrow+NR_END)*sizeof(float*)));
+	m += NR_END;
+	m -= nrl;
 
-   /*allocate rows and set pointers to them */
-      for(i=nrl;i<=nrh;i++) {
-                      m[i]=(float *) malloc((unsigned) (nch-ncl+1)*sizeof(float));
-     m[i] -= ncl;
-    }
-      /* return pointer to array of pointers to rows */
-      return m;
+	m[nrl]=(float *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(float)));
+	m[nrl] += NR_END;
+	m[nrl] -= ncl;
+
+	for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
+
+	return m;
 }
 
 #define MBIG 1000000000
@@ -166,7 +165,7 @@ int i,j;
      else
       {hshadow=height[i][j]-0.5;
        i2=iup[i];
-       while (height[i2][j]<hshadow)
+       while (hshadow>0)
         {if (mask[i2][j]<hshadow) mask[i2][j]=hshadow;
          i2=iup[i2];hshadow-=0.5;}}
 }
@@ -215,7 +214,7 @@ main()
      idum=-56;
      psand=0.6;
      pbed=0.4;
-     thresh=2;
+     thresh=1;
      l=5;
      lattice_size_x=300;
      lattice_size_y=300;
@@ -242,7 +241,7 @@ main()
        height[ijump][jjump]--;
        avalancheup(ijump,jjump);
        ijump=(ijump+l)%lattice_size_x+1;
-       if (mask[ijump][jjump]>0.1) p=1;
+       if (height[ijump][jjump]<mask[ijump][jjump]) p=1;
          else if (height[ijump][jjump]>0) p=psand; else p=pbed;
        while (ran3(&idum)>p)
         {ijump=(ijump+l)%lattice_size_x+1;
