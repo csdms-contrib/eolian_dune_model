@@ -163,8 +163,8 @@ int i,j;
        height[mini][minj]++;
        avalanchedown(mini,minj);}
      else
-      {hshadow=height[i][j]-0.5;
-       i2=iup[i];
+      {hshadow=height[i][j];
+       i2=i;
        while (hshadow>0)
         {if (mask[i2][j]<hshadow) mask[i2][j]=hshadow;
          i2=iup[i2];hshadow-=0.5;}}
@@ -173,7 +173,7 @@ int i,j;
 void avalancheup(i,j)
 int i,j;
 {      float hshadow;
-       int i2,violate,min,mini,minj;
+       int i2,violate,min,mini,minj,count;
 
        violate=0;min=height[i][j];mini=i;minj=j;
        if (height[iup[i]][j]-height[i][j]>thresh)
@@ -196,18 +196,21 @@ int i,j;
         {height[i][j]++;
          height[mini][minj]--;
          avalancheup(mini,minj);}
-       else
-        {hshadow=height[i][j]-0.5;
-         i2=iup[i];
-         while ((hshadow<mask[i2][j])&&(hshadow>0))
-          {if (height[i2][j]>=hshadow) mask[i2][j]=0; else mask[i2][j]=hshadow;
-           i2=iup[i2];hshadow-=0.5;}}
+	   else
+	   {i=1;
+        hshadow=height[i][minj];
+        count=0;
+        while (count<=2*lattice_size_x)
+		{count++;
+	     if (height[i][minj]>hshadow) hshadow=height[i][minj];
+	     mask[i][minj]=hshadow;
+         i=iup[i];hshadow-=0.5;}}
 }
 
 main()
 {    FILE *fp1,*fp2;
      int idum,t,l,ijump,jjump,i,j,duration;
-     float psand,pbed,p;
+     float psand,pbed,p,hshadow;
 
      fp1=fopen("wernermodeltopo","w");
      fp2=fopen("wernermodelshadowmask","w");
@@ -232,14 +235,14 @@ main()
        while (ijump>lattice_size_x) ijump=(int)(ran3(&idum)*lattice_size_x)+1;
        jjump=(int)(ran3(&idum)*lattice_size_y)+1;
        while (jjump>lattice_size_y) jjump=(int)(ran3(&idum)*lattice_size_y)+1;
-       while ((height[ijump][jjump]==0)||(mask[ijump][jjump]>0.1))
+       while ((height[ijump][jjump]==0)||(mask[ijump][jjump]>height[ijump][jjump]))
         {ijump=(int)(ran3(&idum)*lattice_size_x)+1;
          while (ijump>lattice_size_x) ijump=(int)(ran3(&idum)*lattice_size_x)+1;
          jjump=(int)(ran3(&idum)*lattice_size_y)+1;
          while (jjump>lattice_size_y)
           jjump=(int)(ran3(&idum)*lattice_size_y)+1;}
        height[ijump][jjump]--;
-       avalancheup(ijump,jjump);
+       avalancheup(ijump,jjump);	   
        ijump=(ijump+l)%lattice_size_x+1;
        if (height[ijump][jjump]<mask[ijump][jjump]) p=1;
          else if (height[ijump][jjump]>0) p=psand; else p=pbed;
